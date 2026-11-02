@@ -161,13 +161,15 @@ Best regards,
 Omilife Team
 """
 
-            # Send customer confirmation
+            # Send customer confirmation with automatic BCC to Admin (Option B)
+            admin_bcc = [settings.ADMIN_EMAIL] if settings.ADMIN_EMAIL else None
             _send_mail_async(
                 customer_subject,
                 customer_plain_message,
                 settings.ADMIN_EMAIL,  # Use sales@omilife.co.ke as from address
                 [order.email],  # Send to customer's email
                 html_message=customer_html_message,
+                bcc=admin_bcc,  # Automatic copy to management
                 fail_silently=True,
             )
         except Exception as e:
@@ -177,7 +179,7 @@ Omilife Team
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-def _send_mail_async(subject, message, from_email, recipient_list, html_message=None, fail_silently=True):
+def _send_mail_async(subject, message, from_email, recipient_list, html_message=None, bcc=None, fail_silently=True):
     """Send email in a background thread to avoid blocking the request."""
     def _worker():
         try:
@@ -188,6 +190,7 @@ def _send_mail_async(subject, message, from_email, recipient_list, html_message=
                     body=message,  # Plain text content
                     from_email=from_email,
                     to=recipient_list,
+                    bcc=bcc,
                 )
                 # Attach HTML content
                 email.attach_alternative(html_message, "text/html")
