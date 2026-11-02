@@ -1,7 +1,7 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import Product, ProductImage, Order
+from .models import Product, ProductImage, Order, HospitalFacility, ProductBatch, Invoice, InvoiceItem, PaymentReceipt, OrderSalesNote
 
 # Customize Admin Site Branding
 admin.site.site_header = "Omilife Pharmaceuticals Management Portal"
@@ -88,3 +88,33 @@ class ProductImageAdmin(admin.ModelAdmin):
     list_display = ['product', 'image_url', 'is_main']
     list_filter = ['is_main']
     search_fields = ['product__name']
+
+
+class InvoiceItemInline(admin.TabularInline):
+    model = InvoiceItem
+    extra = 0
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ['invoice_number', 'facility_name', 'county', 'grand_total', 'payment_status', 'date']
+    list_filter = ['payment_status', 'county', 'payment_method']
+    search_fields = ['invoice_number', 'facility_name', 'ppb_license']
+    inlines = [InvoiceItemInline]
+
+@admin.register(PaymentReceipt)
+class PaymentReceiptAdmin(admin.ModelAdmin):
+    list_display = ['receipt_number', 'invoice_number', 'facility_name', 'amount', 'payment_method', 'date']
+    list_filter = ['payment_method']
+    search_fields = ['receipt_number', 'invoice_number', 'facility_name', 'reference_number']
+
+@admin.register(ProductBatch)
+class ProductBatchAdmin(admin.ModelAdmin):
+    list_display = ['medicine_name', 'batch_number', 'exp_date', 'quantity_packs', 'quarantine_status']
+    list_filter = ['quarantine_status']
+    search_fields = ['medicine_name', 'batch_number', 'sku']
+
+@admin.register(HospitalFacility)
+class HospitalFacilityAdmin(admin.ModelAdmin):
+    list_display = ['name', 'facility_type', 'county', 'ppb_license', 'phone']
+    list_filter = ['county', 'facility_type']
+    search_fields = ['name', 'ppb_license', 'contact_person']

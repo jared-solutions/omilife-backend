@@ -7,8 +7,15 @@ from django.template.loader import render_to_string
 from django.conf import settings
 import threading
 import logging
-from .models import Product, Order
-from .serializers import ProductSerializer, OrderSerializer
+from .models import (
+    Product, Order, HospitalFacility, ProductBatch, 
+    Invoice, PaymentReceipt, OrderSalesNote
+)
+from .serializers import (
+    ProductSerializer, OrderSerializer, HospitalFacilitySerializer,
+    ProductBatchSerializer, InvoiceSerializer, PaymentReceiptSerializer,
+    OrderSalesNoteSerializer
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +28,18 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         """Fetch all distinct product categories"""
         categories = Product.objects.values_list('category', flat=True).distinct()
         return Response(list(categories))
+
+    
+    @action(detail=True, methods=['post'])
+    def add_note(self, request, pk=None):
+        order = self.get_object()
+        text = request.data.get('text', '')
+        author = request.data.get('author', 'Sales Desk (Jared)')
+        role = request.data.get('role', 'Admin')
+        if not text:
+            return Response({'error': 'Note text is required'}, status=status.HTTP_400_BAD_REQUEST)
+        note = OrderSalesNote.objects.create(order=order, author=author, role=role, text=text)
+        return Response(OrderSalesNoteSerializer(note).data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -208,3 +227,20 @@ def _send_mail_async(subject, message, from_email, recipient_list, html_message=
             logger.exception("Failed to send email asynchronously")
 
     threading.Thread(target=_worker, daemon=True).start()
+
+
+class HospitalFacilityViewSet(viewsets.ModelViewSet):
+    queryset = HospitalFacility.objects.all().order_by('-created_at')
+    serializer_class = HospitalFacilitySerializer
+
+class ProductBatchViewSet(viewsets.ModelViewSet):
+    queryset = ProductBatch.objects.all().order_by('exp_date')
+    serializer_class = ProductBatchSerializer
+
+class InvoiceViewSet(viewsets.ModelViewSet):
+    queryset = Invoice.objects.all().order_by('-created_at')
+    serializer_class = InvoiceSerializer
+
+class PaymentReceiptViewSet(viewsets.ModelViewSet):
+    queryset = PaymentReceipt.objects.all().order_by('-created_at')
+    serializer_class = PaymentReceiptSerializer
