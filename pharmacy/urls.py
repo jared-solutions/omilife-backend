@@ -7,6 +7,8 @@ router.register(r'products', views.ProductViewSet)
 router.register(r'orders', views.OrderViewSet)
 router.register(r'hospitals', views.HospitalFacilityViewSet)
 router.register(r'batches', views.ProductBatchViewSet)
+router.register(r'suppliers', views.SupplierViewSet)
+router.register(r'stock-movements', views.StockMovementViewSet)
 router.register(r'invoices', views.InvoiceViewSet)
 router.register(r'receipts', views.PaymentReceiptViewSet)
 

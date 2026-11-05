@@ -9,12 +9,12 @@ import threading
 import logging
 from .models import (
     Product, Order, HospitalFacility, ProductBatch, 
-    Invoice, PaymentReceipt, OrderSalesNote
+    Invoice, PaymentReceipt, OrderSalesNote, Supplier, StockMovement
 )
 from .serializers import (
     ProductSerializer, OrderSerializer, HospitalFacilitySerializer,
     ProductBatchSerializer, InvoiceSerializer, PaymentReceiptSerializer,
-    OrderSalesNoteSerializer
+    OrderSalesNoteSerializer, SupplierSerializer, StockMovementSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         if not text:
             return Response({'error': 'Note text is required'}, status=status.HTTP_400_BAD_REQUEST)
         note = OrderSalesNote.objects.create(order=order, author=author, role=role, text=text)
-        return Response(OrderSalesNoteSerializer(note).data, status=status.HTTP_201_CREATED)
+        return Response(OrderSalesNoteSerializer, SupplierSerializer, StockMovementSerializer(note).data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -244,3 +244,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 class PaymentReceiptViewSet(viewsets.ModelViewSet):
     queryset = PaymentReceipt.objects.all().order_by('-created_at')
     serializer_class = PaymentReceiptSerializer
+
+
+class SupplierViewSet(viewsets.ModelViewSet):
+    queryset = Supplier.objects.all().order_by('-created_at')
+    serializer_class = SupplierSerializer
+
+class StockMovementViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = StockMovement.objects.all().order_by('-created_at')
+    serializer_class = StockMovementSerializer

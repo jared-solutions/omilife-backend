@@ -186,3 +186,43 @@ class OrderSalesNote(models.Model):
 
     def __str__(self):
         return f"Note by {self.author} on Order {self.order.id}"
+
+
+class Supplier(models.Model):
+    name = models.CharField(max_length=255)
+    country_of_origin = models.CharField(max_length=100, default='India')
+    contact_person = models.CharField(max_length=150, blank=True, default='')
+    email = models.EmailField(blank=True, default='')
+    phone = models.CharField(max_length=50, blank=True, default='')
+    ppb_gmp_cert = models.CharField(max_length=100, blank=True, default='PPB/GMP/FOREIGN/2024')
+    lead_time_days = models.IntegerField(default=21)
+    payment_terms = models.CharField(max_length=100, default='30% Advance, 70% against Bill of Lading')
+    currency = models.CharField(max_length=10, default='USD')
+    active_molecules = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.country_of_origin})"
+
+
+class StockMovement(models.Model):
+    MOVEMENT_TYPES = [
+        ('SALE_DEDUCTION', 'Sale Deduction'),
+        ('PURCHASE_INWARD', 'Purchase Inward'),
+        ('DAMAGE_DISPOSAL', 'Damage Disposal'),
+        ('PPB_AUDIT_SAMPLE', 'PPB Audit Sample'),
+    ]
+
+    sku = models.CharField(max_length=50)
+    medicine_name = models.CharField(max_length=200)
+    batch_number = models.CharField(max_length=100)
+    movement_type = models.CharField(max_length=50, choices=MOVEMENT_TYPES, default='SALE_DEDUCTION')
+    quantity = models.IntegerField()
+    reference_number = models.CharField(max_length=100, blank=True, default='')
+    balance_after = models.IntegerField(default=0)
+    operator = models.CharField(max_length=100, default='System Auto-Deduction')
+    notes = models.CharField(max_length=255, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.movement_type}: {self.medicine_name} ({self.quantity}) -> Bal {self.balance_after}"
